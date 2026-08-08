@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastAPI Websocket Demo</title>
+</head>
+<body>
+    <h1>FastAPI Websocket Demo</h1>
+    <form>
+        <label for="message">Message:</label>
+        <p>
+            <input type="text" id="message" name="message">
+            <button type="submit">Send</button>
+        </p>
+    </form>
+
+    <div id = "messages"></div>
+
+    <script>
+        const ws = new WebSocket("ws://localhost:8000/ws")
+        const form = document.querySelector('form')
+        const messagesDiv = document.getElementById('messages')
+
+        ws.onopen = () => {
+            console.log('Connected to WebSocket Server')
+        }
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data)
+            console.log('Received message:', data)
+
+            const newMessage = document.createElement('p')
+            newMessage.innerText = `<b>${data.client}</b> says ${data.message}`
+
+            messagesDiv.appendChild(newMessage)
+
+
+            const hr = document.createElement('hr')
+            messagesDiv.appendChild(hr)
+        }
+
+        ws.onerror = (error) => {
+            console.error('WebSocket error:', error)
+        }
+
+        ws.onclose = () => {
+            console.log('WebSocket connection closed')
+        }
+
+
+
+        form.addEventListener('submit', async (event) => {
+            const formData = new FormData(form);
+
+            const message = formData.get('message');
+
+            
+
+            ws.send(JSON.stringify({
+                content: message ,
+                
+            }))
+            
+            form.reset();
+
+            
+            
+            event.preventDefault()
+                        
+        })
+        
+        const getIp = async () => {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                return data.ip;
+            } catch (error) {
+                console.error('Error fetching IP address:', error);
+                return null;
+            }
+        }
+        
+    </script>
+</body>
+</html>
